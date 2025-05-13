@@ -50,18 +50,27 @@
             if (!appName) return;
 
             try {
-                const response = await fetch("https://text.pollinations.ai/", {
+                const response = await fetch("https://text.pollinations.ai/openai", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        text: "Make an HTML app in one file, THE RESPONSE MUST BE RAW HTML. This is the app name: " + appName + 
-                              ". Please only respond with the single HTML file."
+                        model: "openai",
+                        messages: [
+                            {
+                                role: "user",
+                                content: "Make an HTML app in one file. The response must be RAW HTML only. App name: " + appName
+                            }
+                        ],
+                        private: false
                     })
                 });
 
-                const htmlContent = response;
+                const data = await response.json();
+                const htmlContent = data.choices?.[0]?.message?.content;
+                if (!htmlContent) throw new Error("No HTML content found.");
+
                 createWindow(appName, htmlContent);
             } catch (error) {
                 alert("Something went wrong: " + error.message);
@@ -83,7 +92,7 @@
             win.appendChild(iframe);
             document.body.appendChild(win);
 
-            // Drag logic
+            // Dragging logic
             let isDragging = false, offsetX, offsetY;
 
             titleBar.addEventListener("mousedown", (e) => {
