@@ -15,6 +15,28 @@
             font-size: 16px;
             cursor: pointer;
         }
+        .window {
+            position: absolute;
+            width: 400px;
+            height: 300px;
+            border: 2px solid white;
+            background-color: white;
+            top: 100px;
+            left: 100px;
+            box-shadow: 4px 4px 10px rgba(0,0,0,0.5);
+        }
+        .title-bar {
+            background-color: crimson;
+            color: white;
+            padding: 5px;
+            cursor: move;
+            font-weight: bold;
+        }
+        iframe {
+            width: 100%;
+            height: calc(100% - 30px);
+            border: none;
+        }
     </style>
     <title>aiOS 1.0</title>
 </head>
@@ -28,15 +50,60 @@
             if (!appName) return;
 
             try {
-                const response = await fetch("https://text.pollinations.ai/" + 
-                    "Make an HTML app in one file, this is the app name: " + appName + 
-                    ". Please only respond with the single html file");
+                const response = await fetch("https://text.pollinations.ai/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        text: "Make an HTML app in one file, THE RESPONSE MUST BE RAW HTML. This is the app name: " + appName + 
+                              ". Please only respond with the single HTML file."
+                    })
+                });
 
-                const text = await response.text();
-                alert(text); // Just shows the result. Could be improved.
+                const htmlContent = await response.text();
+                createWindow(appName, htmlContent);
             } catch (error) {
                 alert("Something went wrong: " + error.message);
             }
+        }
+
+        function createWindow(title, htmlContent) {
+            const win = document.createElement("div");
+            win.className = "window";
+
+            const titleBar = document.createElement("div");
+            titleBar.className = "title-bar";
+            titleBar.textContent = title;
+
+            const iframe = document.createElement("iframe");
+            iframe.srcdoc = htmlContent;
+
+            win.appendChild(titleBar);
+            win.appendChild(iframe);
+            document.body.appendChild(win);
+
+            // Drag logic
+            let isDragging = false, offsetX, offsetY;
+
+            titleBar.addEventListener("mousedown", (e) => {
+                isDragging = true;
+                offsetX = e.clientX - win.offsetLeft;
+                offsetY = e.clientY - win.offsetTop;
+                document.body.style.userSelect = "none";
+            });
+
+            document.addEventListener("mousemove", (e) => {
+                if (isDragging) {
+                    win.style.left = (e.clientX - offsetX) + "px";
+                    win.style.top = (e.clientY - offsetY) + "px";
+                }
+            });
+
+            document.addEventListener("mouseup", () => {
+                isDragging = false;
+                document.body.style.userSelect = "";
+            });
         }
     </script>
 </body>
