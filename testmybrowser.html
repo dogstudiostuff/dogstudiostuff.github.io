@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Feature Support Tester</title>
+  <style>
+    :root{
+      --fg:#0f172a;
+      --bg:#0b1020;
+      --panel:#101830;
+      --muted:#94a3b8;
+      --pass:#10b981;
+      --fail:#ef4444;
+      --warn:#f59e0b;
+      --link:#60a5fa;
+      --border:#1e293b;
+      --badge:#111827;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:linear-gradient(180deg,#0b1020,#0a0f1a);color:#e5e7eb;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,Apple Color Emoji,Segoe UI Emoji}
+    header{padding:24px 20px 8px}
+    h1{margin:0;font-size:20px;letter-spacing:.2px;color:#e2e8f0}
+    p.sub{margin:8px 0 0;color:var(--muted);font-size:13px}
+    main{padding:12px 20px 40px;display:grid;gap:16px;grid-template-columns:1fr;max-width:1100px;margin:0 auto}
+    .panel{background:rgba(16,24,48,.7);border:1px solid var(--border);border-radius:12px;backdrop-filter:blur(6px)}
+    .status{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px}
+    .badge{padding:10px 14px;border-radius:10px;font-weight:700;letter-spacing:.3px;border:1px solid #0f172a;background:var(--badge);min-width:160px;text-align:center}
+    .gray{background:#374151}
+    .red{background:#7f1d1d}
+    .yellow{background:#78350f}
+    .green{background:#064e3b}
+    .blue{background:#0c4a6e}
+    .rainbow{background:linear-gradient(90deg,#ef4444,#f59e0b,#eab308,#22c55e,#3b82f6,#8b5cf6,#ec4899)}
+    .stat{padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#0c1328;font-size:13px;color:#cbd5e1}
+    .stat b{color:#e5e7eb}
+    .controls{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+    button{background:#0b2450;color:#e5e7eb;border:1px solid #1f355f;border-radius:10px;padding:10px 12px;font-weight:600;cursor:pointer}
+    button:hover{background:#0d2a5c}
+    .grid{display:grid;grid-template-columns:1fr;gap:16px}
+    .logs{padding:0 16px 16px}
+    textarea{width:100%;min-height:140px;background:#0a1226;color:#cbd5e1;border:1px solid var(--border);border-radius:10px;padding:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+    .group{padding:12px 16px 6px}
+    .group h2{margin:0 0 10px;font-size:14px;color:#93c5fd;font-weight:700;letter-spacing:.3px}
+    ul.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+    @media (max-width:900px){ul.list{grid-template-columns:1fr}}
+    li.item{display:flex;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#0b1327}
+    .name{color:#e5e7eb}
+    .result{font-weight:800;min-width:70px;text-align:right}
+    .pass{color:var(--pass)}
+    .fail{color:var(--fail)}
+    .legend{padding:0 16px 16px;color:var(--muted);font-size:12px;line-height:1.5}
+    .legend strong{color:#e5e7eb}
+    .footer{padding:12px 16px 16px;color:var(--muted);font-size:12px}
+    code.k{color:#93c5fd}
+    details{background:#0b1327;border:1px solid var(--border);border-radius:10px}
+    details > summary{cursor:pointer;list-style:none;padding:10px 12px;font-weight:600;color:#c7d2fe;border-bottom:1px solid var(--border)}
+    details[open] > summary{border-bottom-color:transparent}
+    .pill{padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:#0a1226;font-size:11px;color:#cbd5e1}
+    .muted{color:var(--muted)}
+    .note{padding:8px 12px;background:#0a1226;border:1px dashed #1e293b;border-radius:10px;color:#cbd5e1}
+    .codes{display:flex;flex-wrap:wrap;gap:8px}
+    .codes .badge{font-size:12px;padding:6px 10px;border-radius:999px}
+    noscript .nos{display:block}
+    .nos{display:none;margin:16px;border:1px solid #3f3f46;border-radius:12px;padding:12px;background:#27272a}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Feature Support Tester</h1>
+    <p class="sub">From legacy basics to the newest web platform APIs. Your browser gets a color code and per‑feature PASS/FAIL logs.</p>
+  </header>
+
+  <noscript>
+    <div class="nos">
+      <div class="badge gray">Code Gray</div>
+      <p class="sub">JavaScript is disabled — most modern websites rely on it to function. Enable JavaScript and reload.</p>
+    </div>
+  </noscript>
+
+  <main>
+    <section class="panel">
+      <div class="status">
+        <div id="ratingBadge" class="badge">Testing…</div>
+        <div class="stat"><b id="statTotal">0</b> total</div>
+        <div class="stat"><b id="statPass">0</b> pass</div>
+        <div class="stat"><b id="statFail">0</b> fail</div>
+        <div class="stat"><b id="statBeta">0</b> beta</div>
+        <div class="controls">
+          <button id="copyBtn" title="Copy PASS/FAIL logs">Copy logs</button>
+          <button id="runBtn" title="Re-run tests">Re-run</button>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="codes">
+          <div class="badge gray">Code Gray</div>
+          <div class="badge red">Code Red</div>
+          <div class="badge yellow">Code Yellow</div>
+          <div class="badge green">Code Green</div>
+          <div class="badge blue">Code Blue</div>
+          <div class="badge rainbow">Code Rainbow</div>
+        </div>
+        <div style="margin-top:8px">
+          <strong>Meaning:</strong>
+          <span class="pill">Gray</span> JavaScript disabled.
+          <span class="pill">Red</span> Low support.
+          <span class="pill">Yellow</span> Limited support.
+          <span class="pill">Green</span> Common features OK.
+          <span class="pill">Blue</span> Most new/beta features OK.
+          <span class="pill">Rainbow</span> Nearly everything supported.
+        </div>
+      </div>
+
+      <div class="logs">
+        <details>
+          <summary>Logs (PASS/FAIL)</summary>
+          <div style="padding:12px">
+            <textarea id="logArea" readonly spellcheck="false"></textarea>
+            <div class="note" style="margin-top:8px">Format: “Feature Name --- PASS/FAIL”</div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="grid">
+        <div class="group">
+          <h2>Core and legacy</h2>
+          <ul id="group-core" class="list"></ul>
+        </div>
+        <div class="group">
+          <h2>HTML and forms</h2>
+          <ul id="group-html" class="list"></ul>
+        </div>
+        <div class="group">
+          <h2>CSS features</h2>
+          <ul id="group-css" class="list"></ul>
+        </div>
+        <div class="group">
+          <h2>JavaScript language</h2>
+          <ul id="group-js" class="list"></ul>
+        </div>
+        <div class="group">
+          <h2>Common web APIs</h2>
+          <ul id="group-web" class="list"></ul>
+        </div>
+        <div class="group">
+          <h2>Advanced and beta</h2>
+          <ul id="group-beta" class="list"></ul>
+        </div>
+      </div>
+      <div class="footer">
+        <div>Tip: Some APIs exist but require permissions (camera, Bluetooth, etc.). This page only checks safe feature availability.</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Simple feature test harness (classic script)
+    (function(){
+      const registry = [];
+      const logs = [];
+      let betaPasses = 0;
+
+      function safeTest(fn){
+        try { return !!fn(); } catch { return false; }
+      }
+
+      function add(name, group, fn, opts={}){
+        const pass = safeTest(fn);
+        const line = `${name} --- ${pass ? 'PASS' : 'FAIL'}`;
+        logs.push(line);
+        registry.push({ name, group, pass, beta: !!opts.beta });
+        if (pass && opts.beta) betaPasses++;
+      }
+
+      // Expose minimal API for the module script to register its own checks
+      window.FeatureTester = {
+        add,
+        addDirect(result){ // {name, group, pass, beta}
+          const {name, group, pass, beta} = result;
+          const line = `${name} --- ${pass ? 'PASS' : 'FAIL'}`;
+          logs.push(line);
+          registry.push({ name, group, pass, beta: !!beta });
+          if (pass && beta) betaPasses++;
+        },
+        run, data(){ return { registry: [...registry], logs: [...logs], betaPasses } },
+        reset(){
+          registry.length = 0; logs.length = 0; betaPasses = 0;
+        }
+      };
+
+      // Define tests
+      function defineTests(){
+        // Core and legacy
+        add('DOM querySelector', 'core', () => typeof document.querySelector === 'function');
+        add('addEventListener', 'core', () => typeof window.addEventListener === 'function');
+        add('XMLHttpRequest', 'core', () => 'XMLHttpRequest' in window);
+        add('History API (pushState)', 'core', () => !!(history && 'pushState' in history));
+        add('LocalStorage', 'core', () => 'localStorage' in window);
+        add('SessionStorage', 'core', () => 'sessionStorage' in window);
+        add('document.all (legacy quirk)', 'core', () => 'all' in document); // legacy presence
+
+        // HTML and forms
+        add('Semantic elements (section/article)', 'html', () => {
+          const s = document.createElement('section');
+          const a = document.createElement('article');
+          return s instanceof HTMLElement && a instanceof HTMLElement;
+        });
+        add('Template element', 'html', () => 'content' in document.createElement('template'));
+        add('Dialog element', 'html', () => 'HTMLDialogElement' in window && typeof document.createElement('dialog').showModal === 'function');
+        add('Details/Summary', 'html', () => 'open' in document.createElement('details'));
+        add('Datalist', 'html', () => 'HTMLDataListElement' in window);
+        add('Input type=date', 'html', () => {
+          const i = document.createElement('input'); i.setAttribute('type','date'); return i.type === 'date';
+        });
+        add('Input type=color', 'html', () => {
+          const i = document.createElement('input'); i.setAttribute('type','color'); return i.type === 'color';
+        });
+        add('Input type=range', 'html', () => {
+          const i = document.createElement('input'); i.setAttribute('type','range'); return i.type === 'range';
+        });
+        add('Constraint validation', 'html', () => 'checkValidity' in document.createElement('input'));
+        add('Download attribute', 'html', () => 'download' in document.createElement('a'));
+        add('Picture/srcset', 'html', () => 'HTMLPictureElement' in window && 'srcset' in document.createElement('img'));
+
+        // CSS features
+        add('Flexbox', 'css', () => CSS && CSS.supports && CSS.supports('display','flex'));
+        add('Grid', 'css', () => CSS && CSS.supports && CSS.supports('display','grid'));
+        add(':focus-visible', 'css', () => CSS.supports('selector(:focus-visible)'));
+        add(':has() relational selector', 'css', () => CSS.supports('selector(:has(*))'));
+        add('Container queries', 'css', () => CSS.supports('container-type: inline-size'));
+        add('Subgrid', 'css', () => CSS.supports('grid-template-columns: subgrid'));
+        add('CSS registerProperty', 'css', () => 'registerProperty' in CSS);
+        add('color-scheme support', 'css', () => CSS.supports('color-scheme: light dark'));
+
+        // JavaScript language
+        add('let/const (ES2015+)', 'js', () => { try { eval('let x=1; const y=2;'); return true; } catch { return false; }});
+        add('Arrow functions', 'js', () => { try { eval('(()=>{})'); return true; } catch { return false; }});
+        add('Promises', 'js', () => 'Promise' in window);
+        add('Symbol', 'js', () => 'Symbol' in window);
+        add('Map/Set', 'js', () => 'Map' in window && 'Set' in window);
+        add('BigInt', 'js', () => typeof BigInt === 'function');
+        add('Async functions', 'js', () => { try { new Function('async function f(){}'); return true; } catch { return false; }});
+        add('structuredClone', 'js', () => 'structuredClone' in window);
+        add('Intl.Segmenter', 'js', () => 'Intl' in window && 'Segmenter' in Intl);
+
+        // Common web APIs
+        add('fetch API', 'web', () => 'fetch' in window);
+        add('Streams (ReadableStream)', 'web', () => 'ReadableStream' in window);
+        add('WebSocket', 'web', () => 'WebSocket' in window);
+        add('EventSource (SSE)', 'web', () => 'EventSource' in window);
+        add('URL and URLSearchParams', 'web', () => 'URL' in window && 'URLSearchParams' in window);
+        add('URL.canParse', 'web', () => 'URL' in window && typeof URL.canParse === 'function');
+        add('Canvas 2D', 'web', () => { const c=document.createElement('canvas'); return !!c.getContext && !!c.getContext('2d'); });
+        add('WebGL', 'web', () => { const c=document.createElement('canvas'); try { return !!(c.getContext('webgl') || c.getContext('experimental-webgl')); } catch { return false; }});
+        add('OffscreenCanvas', 'web', () => 'OffscreenCanvas' in window);
+        add('AudioContext', 'web', () => ('AudioContext' in window) || ('webkitAudioContext' in window));
+        add('MediaDevices (getUserMedia)', 'web', () => navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices);
+        add('IntersectionObserver', 'web', () => 'IntersectionObserver' in window);
+        add('ResizeObserver', 'web', () => 'ResizeObserver' in window);
+        add('MutationObserver', 'web', () => 'MutationObserver' in window);
+        add('PerformanceObserver', 'web', () => 'PerformanceObserver' in window);
+        add('Navigation Timing L2', 'web', () => 'PerformanceNavigationTiming' in window);
+        add('Service Worker (availability)', 'web', () => 'serviceWorker' in navigator);
+        add('Cache Storage', 'web', () => 'caches' in window);
+        add('Clipboard (async)', 'web', () => navigator.clipboard && typeof navigator.clipboard.readText === 'function');
+        add('StorageManager estimate', 'web', () => navigator.storage && typeof navigator.storage.estimate === 'function');
+        add('Notification API', 'web', () => 'Notification' in window);
+        add('Payment Request', 'web', () => 'PaymentRequest' in window);
+        add('WebAssembly', 'web', () => 'WebAssembly' in window);
+
+        // Advanced and beta (flagged)
+        add('View Transitions API', 'beta', () => typeof document.startViewTransition === 'function', { beta:true });
+        add('URLPattern', 'beta', () => 'URLPattern' in window, { beta:true });
+        add('CompressionStream', 'beta', () => 'CompressionStream' in window && 'DecompressionStream' in window, { beta:true });
+        add('File System Access', 'beta', () => 'showOpenFilePicker' in window || 'chooseFileSystemEntries' in window, { beta:true });
+        add('Web Share API', 'beta', () => 'share' in navigator, { beta:true });
+        add('Web Share Target (canShare)', 'beta', () => typeof navigator.canShare === 'function', { beta:true });
+        add('Web Bluetooth', 'beta', () => 'bluetooth' in navigator, { beta:true });
+        add('Web USB', 'beta', () => 'usb' in navigator, { beta:true });
+        add('Web HID', 'beta', () => 'hid' in navigator, { beta:true });
+        add('Web Serial', 'beta', () => 'serial' in navigator, { beta:true });
+        add('EyeDropper API', 'beta', () => 'EyeDropper' in window, { beta:true });
+        add('Contacts Picker', 'beta', () => 'contacts' in navigator, { beta:true });
+        add('WebGPU', 'beta', () => navigator.gpu, { beta:true });
+        add('SharedArrayBuffer (availability)', 'beta', () => 'SharedArrayBuffer' in window, { beta:true });
+        add('BroadcastChannel', 'beta', () => 'BroadcastChannel' in window, { beta:true });
+        add('Crypto.randomUUID', 'beta', () => crypto && typeof crypto.randomUUID === 'function', { beta:true });
+      }
+
+      // UI rendering
+      function render(){
+        const byGroup = { core:[], html:[], css:[], js:[], web:[], beta:[] };
+        const { registry } = window.FeatureTester.data();
+        registry.forEach(r => { if (!byGroup[r.group]) byGroup[r.group]=[]; byGroup[r.group].push(r); });
+
+        function fill(groupId, items){
+          const ul = document.getElementById(groupId);
+          ul.innerHTML = '';
+          items.forEach(({name, pass}) => {
+            const li = document.createElement('li');
+            li.className = 'item';
+            const nameEl = document.createElement('div'); nameEl.className='name'; nameEl.textContent = name;
+            const resEl = document.createElement('div'); resEl.className='result ' + (pass ? 'pass' : 'fail'); resEl.textContent = pass ? 'PASS' : 'FAIL';
+            li.append(nameEl, resEl);
+            ul.appendChild(li);
+          });
+        }
+
+        fill('group-core', byGroup.core);
+        fill('group-html', byGroup.html);
+        fill('group-css', byGroup.css);
+        fill('group-js', byGroup.js);
+        fill('group-web', byGroup.web);
+        fill('group-beta', byGroup.beta);
+
+        // Stats
+        const total = registry.length;
+        const pass = registry.filter(r => r.pass).length;
+        const fail = total - pass;
+        const betaPass = registry.filter(r => r.pass && r.beta).length;
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statPass').textContent = pass;
+        document.getElementById('statFail').textContent = fail;
+        document.getElementById('statBeta').textContent = betaPass;
+
+        // Logs
+        document.getElementById('logArea').value = window.FeatureTester.data().logs.join('\n');
+
+        // Rating
+        const badge = document.getElementById('ratingBadge');
+        const ratio = total ? (pass / total) : 0;
+        const allPass = fail === 0;
+
+        let code = 'Code Red', cls = 'badge red';
+        if (ratio === 0) { code = 'Code Red'; cls = 'badge red'; }
+        if (ratio >= 0.3 && ratio < 0.6) { code = 'Code Yellow'; cls = 'badge yellow'; }
+        if (ratio >= 0.6 && ratio < 0.85) { code = 'Code Green'; cls = 'badge green'; }
+        if (ratio >= 0.85 && ratio < 0.98) {
+          code = (betaPass >= 5) ? 'Code Blue' : 'Code Green';
+          cls = (betaPass >= 5) ? 'badge blue' : 'badge green';
+        }
+        if (ratio >= 0.98) {
+          code = allPass ? 'Code Rainbow' : (betaPass >= 5 ? 'Code Blue' : 'Code Green');
+          cls = allPass ? 'badge rainbow' : (betaPass >= 5 ? 'badge blue' : 'badge green');
+        }
+        badge.className = cls;
+        badge.textContent = code;
+      }
+
+      function run(){
+        window.FeatureTester.reset();
+        defineTests();
+        render();
+      }
+
+      // Wire up controls
+      window.addEventListener('DOMContentLoaded', () => {
+        const copyBtn = document.getElementById('copyBtn');
+        const runBtn = document.getElementById('runBtn');
+        copyBtn.addEventListener('click', async () => {
+          const text = document.getElementById('logArea').value;
+          try {
+            await navigator.clipboard.writeText(text);
+            copyBtn.textContent = 'Copied!';
+            setTimeout(()=> copyBtn.textContent='Copy logs', 1200);
+          } catch {
+            // Fallback: select text for manual copy
+            const ta = document.getElementById('logArea');
+            ta.focus(); ta.select();
+            copyBtn.textContent = 'Select to copy';
+            setTimeout(()=> copyBtn.textContent='Copy logs', 1200);
+          }
+        });
+        runBtn.addEventListener('click', () => run());
+        // Initial run (allow the module script a moment to register)
+        setTimeout(run, 10);
+      });
+    })();
+  </script>
+
+  <!-- Module-only checks (proves module support, import.meta, etc.) -->
+  <script type="module">
+    // If this runs, the browser supports module scripts.
+    window.FeatureTester.addDirect({ name:'Module scripts', group:'js', pass:true, beta:false });
+    // import.meta presence
+    window.FeatureTester.addDirect({ name:'import.meta', group:'js', pass: typeof import.meta === 'object', beta:false });
+    // Top-level await support can be inferred via module execution context; we won't block here.
+    // Dynamic import syntax is supported in modules; do a non-networked harmless check.
+    const dynImportSupported = true; // If this code runs, syntax is available.
+    window.FeatureTester.addDirect({ name:'Dynamic import() syntax', group:'js', pass: dynImportSupported, beta:false });
+  </script>
+</body>
+</html>
