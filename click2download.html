@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Downloader</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2em;
+    }
+    a.download {
+      display: inline-block;
+      margin-top: 1em;
+      padding: 0.75em 1.25em;
+      font-size: 1.1em;
+      background: #0078d4;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+    .disclaimer {
+      margin-top: 1.5em;
+      font-size: 0.9em;
+      color: #555;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  const dataUri = params.get("datauri");
+  const filename = params.get("filename") || "download";
+
+  if (!dataUri) {
+    document.body.textContent = "Missing ?datauri parameter";
+    return;
+  }
+
+  const a = document.createElement("a");
+  a.href = dataUri;
+  a.download = filename;
+  a.className = "download";
+  a.textContent = "Tap to download";
+
+  // Try auto-download
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+
+  // If auto-download is blocked, show manual UI
+  setTimeout(() => {
+    a.style.display = "inline-block";
+
+    const title = document.createElement("h2");
+    title.textContent = "Download ready";
+
+    const disclaimer = document.createElement("div");
+    disclaimer.className = "disclaimer";
+    disclaimer.textContent =
+      "No malware is included — even though it looks sketchy, " +
+      "I literally made this only for the Scratch gem.";
+
+    document.body.prepend(title);
+    document.body.appendChild(disclaimer);
+  }, 500);
+})();
+</script>
+
+</body>
+</html>
